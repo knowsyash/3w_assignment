@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: social-mvp-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: MONGO_DB_NAME
+        value: 3w
+      - key: CLIENT_URL
+        sync: false
