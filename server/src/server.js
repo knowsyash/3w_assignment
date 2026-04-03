@@ -8,6 +8,9 @@ dotenv.config();
 const preferredPort = Number(process.env.PORT || 5001);
 const mongoUri = process.env.MONGO_URI;
 const maxPortRetries = 5;
+const dbRetryMs = 30000;
+
+let dbConnected = false;
 
 function listenWithRetry(startPort) {
     return new Promise((resolve, reject) => {
@@ -37,11 +40,32 @@ function listenWithRetry(startPort) {
 }
 
 async function startServer() {
-    try {
-        await connectDB(mongoUri);
+    async function tryConnectDB() {
+        if (dbConnected) {
+            return;
+        }
 
+        try {
+            await connectDB(mongoUri);
+            dbConnected = true;
+            console.log('[DB] Connected successfully.');
+        } catch (error) {
+            console.warn(`[DB] Connection unavailable: ${error.message}`);
+        }
+    }
+
+    try {
         const { port } = await listenWithRetry(preferredPort);
         console.log(`[SERVER] Listening on port ${port}`);
+
+        await tryConnectDB();
+
+        if (!dbConnected) {
+            console.warn(`[DB] Running without database for now. Retrying every ${dbRetryMs / 1000}s.`);
+            setInterval(() => {
+                void tryConnectDB();
+            }, dbRetryMs);
+        }
     } catch (error) {
         console.error(`[SERVER] Error: ${error.message}`);
         process.exit(1);

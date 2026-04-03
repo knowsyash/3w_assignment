@@ -36,6 +36,13 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+app.get('/health', (req, res) => {
+    res.json({
+        message: 'API is running',
+        uptime: process.uptime()
+    });
+});
+
 function formatUser(user) {
     return {
         id: user._id ? user._id.toString() : user.id,
