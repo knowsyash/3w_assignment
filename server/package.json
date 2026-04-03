@@ -5,6 +5,7 @@
     "main": "src/server.js",
     "scripts": {
         "dev": "nodemon src/server.js",
+        "build": "node -e \"console.log('No build step required for server')\"",
         "start": "node src/server.js"
     },
     "dependencies": {
