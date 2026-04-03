@@ -400,7 +400,6 @@ function FeedPage({ currentUser, posts, loadingPosts, commentDrafts, onCommentDr
                                                     </Typography>
                                                 </Box>
                                             </Stack>
-                                            <Chip size="small" label={`${post.likes.length} likes`} />
                                         </Stack>
 
                                         {post.text ? <Typography variant="body1">{post.text}</Typography> : null}
@@ -416,7 +415,7 @@ function FeedPage({ currentUser, posts, loadingPosts, commentDrafts, onCommentDr
                                 </CardContent>
 
                                 <CardActions sx={{ px: 2, pt: 0, justifyContent: 'space-between' }}>
-                                    <Stack direction="row" spacing={1}>
+                                    <Stack direction="row" spacing={1.25} alignItems="center">
                                         <Button
                                             startIcon={likedByCurrentUser ? <FavoriteRoundedIcon /> : <FavoriteBorderRoundedIcon />}
                                             variant="text"
@@ -426,6 +425,9 @@ function FeedPage({ currentUser, posts, loadingPosts, commentDrafts, onCommentDr
                                         >
                                             Like
                                         </Button>
+                                        <Typography variant="body2" color={likedByCurrentUser ? 'error.main' : 'text.secondary'}>
+                                            {post.likes.length} likes
+                                        </Typography>
                                         <Button startIcon={<ChatBubbleOutlineRoundedIcon />} variant="text" disabled>
                                             {post.comments.length} Comments
                                         </Button>
