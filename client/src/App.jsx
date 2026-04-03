@@ -83,8 +83,6 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
         { path: '/feed', label: 'Feed', icon: <HomeRoundedIcon fontSize="small" /> }
     ];
 
-    const currentTab = routes.findIndex((route) => route.path === location.pathname);
-
     return (
         <AppBar
             position="sticky"
@@ -92,16 +90,16 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
             elevation={0}
             sx={{ borderBottom: '1px solid', borderColor: 'divider', backdropFilter: 'blur(6px)' }}
         >
-            <Toolbar sx={{ py: 1, minHeight: 72, gap: 1.5 }}>
-                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flexGrow: 1 }}>
+            <Toolbar sx={{ py: 1, minHeight: 72, gap: 1.5, alignItems: 'center' }}>
+                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flexGrow: 1, minWidth: 0 }}>
                     <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
                         <AutoAwesomeRoundedIcon fontSize="small" />
                     </Avatar>
-                    <Box>
-                        <Typography variant="h6" sx={{ lineHeight: 1.1 }}>
+                    <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="h6" sx={{ lineHeight: 1.1 }} noWrap>
                             TaskPlanet Social
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
                             Fast social flow, clean and focused
                         </Typography>
                     </Box>
@@ -124,7 +122,7 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
                     </Stack>
                 ) : null}
 
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ ml: 2 }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ ml: { xs: 0, md: 2 }, flexShrink: 0 }}>
                     <Chip
                         color={currentUser ? 'secondary' : 'default'}
                         variant={currentUser ? 'filled' : 'outlined'}
@@ -141,19 +139,21 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
             </Toolbar>
 
             {isMobile ? (
-                <Stack direction="row" spacing={1} sx={{ px: 2, pb: 1.25, overflowX: 'auto' }}>
-                    {routes.map((route) => (
-                        <Button
-                            key={route.path}
-                            startIcon={route.icon}
-                            variant={location.pathname === route.path ? 'contained' : 'outlined'}
-                            onClick={() => navigate(route.path)}
-                            sx={{ minWidth: 110, flexShrink: 0 }}
-                        >
-                            {route.label}
-                        </Button>
-                    ))}
-                </Stack>
+                <Box sx={{ px: 2, pb: 1.25 }}>
+                    <Stack direction="row" spacing={1} sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+                        {routes.map((route) => (
+                            <Button
+                                key={route.path}
+                                startIcon={route.icon}
+                                variant={location.pathname === route.path ? 'contained' : 'outlined'}
+                                onClick={() => navigate(route.path)}
+                                sx={{ minWidth: 0, width: '100%', px: 1 }}
+                            >
+                                {route.label}
+                            </Button>
+                        ))}
+                    </Stack>
+                </Box>
             ) : null}
         </AppBar>
     );
