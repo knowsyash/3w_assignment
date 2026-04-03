@@ -90,7 +90,7 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
             elevation={0}
             sx={{ borderBottom: '1px solid', borderColor: 'divider', backdropFilter: 'blur(6px)' }}
         >
-            <Toolbar sx={{ py: 1, minHeight: 72, gap: 1.5, alignItems: 'center' }}>
+            <Toolbar sx={{ py: 1, minHeight: 72, gap: 1.5, alignItems: 'center', flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flexGrow: 1, minWidth: 0 }}>
                     <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
                         <AutoAwesomeRoundedIcon fontSize="small" />
@@ -128,8 +128,9 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
                         variant={currentUser ? 'filled' : 'outlined'}
                         size="small"
                         label={currentUser ? currentUser.name : 'Guest'}
+                        sx={{ maxWidth: { xs: 80, sm: 120 } }}
                     />
-                    <Chip size="small" variant="outlined" label={`${postsCount} posts`} />
+                    <Chip size="small" variant="outlined" label={`${postsCount} posts`} sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />
                     {currentUser ? (
                         <IconButton size="small" onClick={onLogout}>
                             <LogoutRoundedIcon fontSize="small" />
@@ -140,19 +141,19 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
 
             {isMobile ? (
                 <Box sx={{ px: 2, pb: 1.25 }}>
-                    <Stack direction="row" spacing={1} sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 1 }}>
                         {routes.map((route) => (
                             <Button
                                 key={route.path}
                                 startIcon={route.icon}
                                 variant={location.pathname === route.path ? 'contained' : 'outlined'}
                                 onClick={() => navigate(route.path)}
-                                sx={{ minWidth: 0, width: '100%', px: 1 }}
+                                sx={{ minWidth: 0, width: '100%', px: 0.5, fontSize: '0.8rem' }}
                             >
                                 {route.label}
                             </Button>
                         ))}
-                    </Stack>
+                    </Box>
                 </Box>
             ) : null}
         </AppBar>
@@ -176,7 +177,7 @@ function AuthCard({ title, subtitle, icon, children }) {
     );
 }
 
-function SignupPage({ showNotice }) {
+function SignupPage({ onSignupSuccess, showNotice }) {
     const navigate = useNavigate();
     const [form, setForm] = useState({ name: '', email: '', password: '' });
     const [submitting, setSubmitting] = useState(false);
@@ -196,9 +197,10 @@ function SignupPage({ showNotice }) {
 
         setSubmitting(true);
         try {
-            await signup(payload);
-            showNotice('success', 'Account created. Login to continue.');
-            navigate('/login');
+            const data = await signup(payload);
+            onSignupSuccess(data.user);
+            showNotice('success', `Welcome, ${data.user.name}.`);
+            navigate('/feed');
         } catch (error) {
             showNotice('error', error.message);
         } finally {
@@ -550,7 +552,7 @@ export default function App() {
 
                 <Routes>
                     <Route path="/" element={<Navigate to={currentUser ? '/feed' : '/signup'} replace />} />
-                    <Route path="/signup" element={<SignupPage showNotice={showNotice} />} />
+                    <Route path="/signup" element={<SignupPage onSignupSuccess={(user) => setCurrentUser(user)} showNotice={showNotice} />} />
                     <Route path="/login" element={<LoginPage onLoginSuccess={(user) => setCurrentUser(user)} showNotice={showNotice} />} />
                     <Route
                         path="/feed"
