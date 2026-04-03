@@ -27,6 +27,7 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import LoginRoundedIcon from '@mui/icons-material/LoginRounded';
 import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
+import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
@@ -376,78 +377,90 @@ function FeedPage({ currentUser, posts, loadingPosts, commentDrafts, onCommentDr
                 ) : null}
 
                 {!loadingPosts
-                    ? posts.map((post) => (
-                        <Card key={post.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
-                            <CardContent sx={{ pb: 1.5 }}>
-                                <Stack spacing={1.5}>
-                                    <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between">
-                                        <Stack direction="row" spacing={1.25} alignItems="center">
-                                            <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36 }}>
-                                                {post.username.charAt(0).toUpperCase()}
-                                            </Avatar>
-                                            <Box>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                                                    {post.username}
-                                                </Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {new Date(post.createdAt).toLocaleString()}
-                                                </Typography>
-                                            </Box>
+                    ? posts.map((post) => {
+                        const likedByCurrentUser = Boolean(
+                            currentUser && post.likes.some((like) => String(like.userId) === String(currentUser.id))
+                        );
+
+                        return (
+                            <Card key={post.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
+                                <CardContent sx={{ pb: 1.5 }}>
+                                    <Stack spacing={1.5}>
+                                        <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between">
+                                            <Stack direction="row" spacing={1.25} alignItems="center">
+                                                <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36 }}>
+                                                    {post.username.charAt(0).toUpperCase()}
+                                                </Avatar>
+                                                <Box>
+                                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                                        {post.username}
+                                                    </Typography>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        {new Date(post.createdAt).toLocaleString()}
+                                                    </Typography>
+                                                </Box>
+                                            </Stack>
+                                            <Chip size="small" label={`${post.likes.length} likes`} />
                                         </Stack>
-                                        <Chip size="small" label={`${post.likes.length} likes`} />
+
+                                        {post.text ? <Typography variant="body1">{post.text}</Typography> : null}
+                                        {post.imageUrl ? (
+                                            <Box
+                                                component="img"
+                                                src={post.imageUrl}
+                                                alt="post"
+                                                sx={{ width: '100%', borderRadius: 3, border: '1px solid', borderColor: 'divider', maxHeight: 460, objectFit: 'cover' }}
+                                            />
+                                        ) : null}
                                     </Stack>
+                                </CardContent>
 
-                                    {post.text ? <Typography variant="body1">{post.text}</Typography> : null}
-                                    {post.imageUrl ? (
-                                        <Box
-                                            component="img"
-                                            src={post.imageUrl}
-                                            alt="post"
-                                            sx={{ width: '100%', borderRadius: 3, border: '1px solid', borderColor: 'divider', maxHeight: 460, objectFit: 'cover' }}
-                                        />
-                                    ) : null}
-                                </Stack>
-                            </CardContent>
-
-                            <CardActions sx={{ px: 2, pt: 0, justifyContent: 'space-between' }}>
-                                <Stack direction="row" spacing={1}>
-                                    <Button startIcon={<FavoriteBorderRoundedIcon />} variant="text" onClick={() => onLike(post.id)} disabled={!currentUser}>
-                                        Like
-                                    </Button>
-                                    <Button startIcon={<ChatBubbleOutlineRoundedIcon />} variant="text" disabled>
-                                        {post.comments.length} Comments
-                                    </Button>
-                                </Stack>
-                            </CardActions>
-
-                            <Divider />
-
-                            <Box sx={{ px: 2, py: 1.5 }}>
-                                <Stack spacing={1.2}>
-                                    {post.comments.map((comment) => (
-                                        <Box key={comment.id} sx={{ backgroundColor: '#f6f8fb', borderRadius: 2, px: 1.25, py: 1 }}>
-                                            <Typography variant="subtitle2">{comment.username}</Typography>
-                                            <Typography variant="body2">{comment.text}</Typography>
-                                        </Box>
-                                    ))}
-
-                                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                                        <TextField
-                                            size="small"
-                                            placeholder={currentUser ? 'Write a comment' : 'Login to comment'}
-                                            value={commentDrafts[post.id] || ''}
-                                            onChange={(e) => onCommentDraft(post.id, e.target.value)}
+                                <CardActions sx={{ px: 2, pt: 0, justifyContent: 'space-between' }}>
+                                    <Stack direction="row" spacing={1}>
+                                        <Button
+                                            startIcon={likedByCurrentUser ? <FavoriteRoundedIcon /> : <FavoriteBorderRoundedIcon />}
+                                            variant="text"
+                                            color={likedByCurrentUser ? 'error' : 'inherit'}
+                                            onClick={() => onLike(post.id)}
                                             disabled={!currentUser}
-                                            fullWidth
-                                        />
-                                        <Button variant="contained" endIcon={<SendRoundedIcon />} onClick={() => onComment(post.id)} disabled={!currentUser}>
-                                            Post
+                                        >
+                                            Like
+                                        </Button>
+                                        <Button startIcon={<ChatBubbleOutlineRoundedIcon />} variant="text" disabled>
+                                            {post.comments.length} Comments
                                         </Button>
                                     </Stack>
-                                </Stack>
-                            </Box>
-                        </Card>
-                    ))
+                                </CardActions>
+
+                                <Divider />
+
+                                <Box sx={{ px: 2, py: 1.5 }}>
+                                    <Stack spacing={1.2}>
+                                        {post.comments.map((comment) => (
+                                            <Box key={comment.id} sx={{ backgroundColor: '#f6f8fb', borderRadius: 2, px: 1.25, py: 1 }}>
+                                                <Typography variant="subtitle2">{comment.username}</Typography>
+                                                <Typography variant="body2">{comment.text}</Typography>
+                                            </Box>
+                                        ))}
+
+                                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                                            <TextField
+                                                size="small"
+                                                placeholder={currentUser ? 'Write a comment' : 'Login to comment'}
+                                                value={commentDrafts[post.id] || ''}
+                                                onChange={(e) => onCommentDraft(post.id, e.target.value)}
+                                                disabled={!currentUser}
+                                                fullWidth
+                                            />
+                                            <Button variant="contained" endIcon={<SendRoundedIcon />} onClick={() => onComment(post.id)} disabled={!currentUser}>
+                                                Post
+                                            </Button>
+                                        </Stack>
+                                    </Stack>
+                                </Box>
+                            </Card>
+                        );
+                    })
                     : null}
             </Stack>
         </Container>
