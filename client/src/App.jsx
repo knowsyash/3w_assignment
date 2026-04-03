@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import {
     Alert,
     AppBar,
     Avatar,
-    Badge,
     Box,
     Button,
     Card,
@@ -17,8 +16,6 @@ import {
     IconButton,
     Paper,
     Stack,
-    Tab,
-    Tabs,
     TextField,
     ThemeProvider,
     Toolbar,
@@ -29,7 +26,6 @@ import {
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import LoginRoundedIcon from '@mui/icons-material/LoginRounded';
 import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
-import AddBoxRoundedIcon from '@mui/icons-material/AddBoxRounded';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
@@ -96,7 +92,7 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
             elevation={0}
             sx={{ borderBottom: '1px solid', borderColor: 'divider', backdropFilter: 'blur(6px)' }}
         >
-            <Toolbar sx={{ py: 1, minHeight: 72 }}>
+            <Toolbar sx={{ py: 1, minHeight: 72, gap: 1.5 }}>
                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flexGrow: 1 }}>
                     <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
                         <AutoAwesomeRoundedIcon fontSize="small" />
@@ -112,17 +108,20 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
                 </Stack>
 
                 {!isMobile ? (
-                    <Tabs value={currentTab >= 0 ? currentTab : false} onChange={(event, index) => navigate(routes[index].path)}>
+                    <Stack direction="row" spacing={1}>
                         {routes.map((route) => (
-                            <Tab
+                            <Button
                                 key={route.path}
-                                icon={route.icon}
-                                iconPosition="start"
-                                label={route.label}
-                                sx={{ minHeight: 40 }}
-                            />
+                                startIcon={route.icon}
+                                variant={location.pathname === route.path ? 'contained' : 'text'}
+                                color={location.pathname === route.path ? 'primary' : 'inherit'}
+                                onClick={() => navigate(route.path)}
+                                sx={{ borderRadius: 2, px: 1.5 }}
+                            >
+                                {route.label}
+                            </Button>
                         ))}
-                    </Tabs>
+                    </Stack>
                 ) : null}
 
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ ml: 2 }}>
@@ -132,9 +131,7 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
                         size="small"
                         label={currentUser ? currentUser.name : 'Guest'}
                     />
-                    <Badge badgeContent={postsCount} color="primary">
-                        <AddBoxRoundedIcon color="action" fontSize="small" />
-                    </Badge>
+                    <Chip size="small" variant="outlined" label={`${postsCount} posts`} />
                     {currentUser ? (
                         <IconButton size="small" onClick={onLogout}>
                             <LogoutRoundedIcon fontSize="small" />
@@ -144,16 +141,19 @@ function TopNavigation({ currentUser, postsCount, onLogout }) {
             </Toolbar>
 
             {isMobile ? (
-                <Tabs
-                    value={currentTab >= 0 ? currentTab : false}
-                    onChange={(event, index) => navigate(routes[index].path)}
-                    variant="fullWidth"
-                    sx={{ px: 1 }}
-                >
+                <Stack direction="row" spacing={1} sx={{ px: 2, pb: 1.25, overflowX: 'auto' }}>
                     {routes.map((route) => (
-                        <Tab key={route.path} icon={route.icon} label={route.label} sx={{ minHeight: 52 }} />
+                        <Button
+                            key={route.path}
+                            startIcon={route.icon}
+                            variant={location.pathname === route.path ? 'contained' : 'outlined'}
+                            onClick={() => navigate(route.path)}
+                            sx={{ minWidth: 110, flexShrink: 0 }}
+                        >
+                            {route.label}
+                        </Button>
                     ))}
-                </Tabs>
+                </Stack>
             ) : null}
         </AppBar>
     );
@@ -176,7 +176,7 @@ function AuthCard({ title, subtitle, icon, children }) {
     );
 }
 
-function SignupPage({ onSignupSuccess, showNotice }) {
+function SignupPage({ showNotice }) {
     const navigate = useNavigate();
     const [form, setForm] = useState({ name: '', email: '', password: '' });
     const [submitting, setSubmitting] = useState(false);
@@ -197,7 +197,6 @@ function SignupPage({ onSignupSuccess, showNotice }) {
         setSubmitting(true);
         try {
             await signup(payload);
-            onSignupSuccess();
             showNotice('success', 'Account created. Login to continue.');
             navigate('/login');
         } catch (error) {
@@ -467,7 +466,6 @@ export default function App() {
     const [posts, setPosts] = useState([]);
     const [commentDrafts, setCommentDrafts] = useState({});
     const [loadingPosts, setLoadingPosts] = useState(true);
-    const [hasSignedUp, setHasSignedUp] = useState(false);
     const [notice, setNotice] = useState({ type: 'info', message: 'Create an account or login to begin.' });
 
     useEffect(() => {
@@ -498,15 +496,6 @@ export default function App() {
     }, []);
 
     const noticeSeverity = notice.type === 'error' ? 'error' : notice.type === 'success' ? 'success' : 'info';
-
-    const stepChips = useMemo(
-        () => [
-            { label: 'Signup', done: hasSignedUp || Boolean(currentUser) },
-            { label: 'Login', done: Boolean(currentUser) },
-            { label: 'Feed', done: posts.length > 0 }
-        ],
-        [currentUser, hasSignedUp, posts.length]
-    );
 
     function showNotice(type, message) {
         setNotice({ type, message });
@@ -556,22 +545,12 @@ export default function App() {
                 <TopNavigation currentUser={currentUser} postsCount={posts.length} onLogout={handleLogout} />
 
                 <Container maxWidth="md" sx={{ pt: 2 }}>
-                    <Paper elevation={0} sx={{ p: 1.25, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
-                        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                            {stepChips.map((step) => (
-                                <Chip key={step.label} size="small" color={step.done ? 'success' : 'default'} label={step.label} />
-                            ))}
-                        </Stack>
-                    </Paper>
-                </Container>
-
-                <Container maxWidth="md" sx={{ pt: 2 }}>
                     <Alert severity={noticeSeverity}>{notice.message}</Alert>
                 </Container>
 
                 <Routes>
                     <Route path="/" element={<Navigate to={currentUser ? '/feed' : '/signup'} replace />} />
-                    <Route path="/signup" element={<SignupPage onSignupSuccess={() => setHasSignedUp(true)} showNotice={showNotice} />} />
+                    <Route path="/signup" element={<SignupPage showNotice={showNotice} />} />
                     <Route path="/login" element={<LoginPage onLoginSuccess={(user) => setCurrentUser(user)} showNotice={showNotice} />} />
                     <Route
                         path="/feed"
